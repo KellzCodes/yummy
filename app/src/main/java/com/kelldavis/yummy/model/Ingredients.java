@@ -28,7 +28,7 @@ public class Ingredients implements Parcelable {
     /**
      * Instantiates a new Ingredients.
      *
-     * @param in the in
+     * @param in the parcel
      */
     protected Ingredients(Parcel in) {
         quantity = in.readInt();
