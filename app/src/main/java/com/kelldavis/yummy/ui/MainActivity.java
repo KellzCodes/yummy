@@ -1,13 +1,24 @@
-package com.kelldavis.yummy;
+package com.kelldavis.yummy.ui;
 
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.content.Intent;
+import android.support.v4.app.Fragment;
 
-public class MainActivity extends AppCompatActivity {
+import com.kelldavis.yummy.fragment.RecipeListFragment;
+import com.kelldavis.yummy.model.Recipe;
+import com.kelldavis.yummy.presenter.RecipeListPresenter;
+import com.kelldavis.yummy.widget.RecipeWidgetService;
+
+public class MainActivity extends BaseActivity implements RecipeListPresenter.Callbacks {
+    @Override
+    protected Fragment createFragment() {
+        return new RecipeListFragment();
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    public void recipeSelected(Recipe recipe) {
+        Intent intent = RecipeDetailActivity.newIntent(this, recipe);
+        RecipeWidgetService.startActionUpdateRecipeWidgets(this, recipe);
+        startActivity(intent);
     }
 }
+

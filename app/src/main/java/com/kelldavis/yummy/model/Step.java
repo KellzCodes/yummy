@@ -3,69 +3,58 @@ package com.kelldavis.yummy.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
-/**
- * The Step object.
- */
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Step implements Parcelable {
-    @JsonProperty("videoURL")
-    private final String videoURL;
-    @JsonProperty("description")
-    private final String description;
-    @JsonProperty("id")
-    private final int id;
-    @JsonProperty("shortDescription")
-    private final String shortDescription;
-    @JsonProperty("thumbnailURL")
-    private final String thumbnailURL;
+    @SerializedName("id")
+    @Expose
+    private Integer id;
+    @SerializedName("shortDescription")
+    @Expose
+    private String shortDescription;
+    @SerializedName("description")
+    @Expose
+    private String description;
+    @SerializedName("videoURL")
+    @Expose
+    private String videoURL;
+    @SerializedName("thumbnailURL")
+    @Expose
+    private String thumbnailURL;
 
-    /**
-     * Instantiates a new Step object.
-     */
-    public Step() {
-        this.videoURL = "";
-        this.description = "";
-        this.id = 0;
-        this.shortDescription = "";
-        this.thumbnailURL = "";
+    public Integer getId() {
+        return id;
     }
 
-    // Parcelable
-    @Override
-    public int describeContents() {
-        return 0;
+    public String getShortDescription() {
+        return shortDescription;
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.videoURL);
-        dest.writeString(this.description);
-        dest.writeInt(this.id);
-        dest.writeString(this.shortDescription);
-        dest.writeString(this.thumbnailURL);
+    public String getDescription() {
+        return description;
     }
 
-    /**
-     * Instantiates a new Step.
-     *
-     * @param in the Parcel
-     */
+    public String getVideoURL() {
+        return videoURL;
+    }
+
+    public String getThumbnailURL() {
+        return thumbnailURL;
+    }
+
     protected Step(Parcel in) {
-        this.videoURL = in.readString();
-        this.description = in.readString();
-        this.id = in.readInt();
-        this.shortDescription = in.readString();
-        this.thumbnailURL = in.readString();
+        id = in.readInt();
+        shortDescription = in.readString();
+        description = in.readString();
+        videoURL = in.readString();
+        thumbnailURL = in.readString();
     }
 
-
-    public static final Parcelable.Creator<Step> CREATOR = new Parcelable.Creator<Step>() {
+    public static final Creator<Step> CREATOR = new Creator<Step>() {
         @Override
-        public Step createFromParcel(Parcel source) {
-            return new Step(source);
+        public Step createFromParcel(Parcel in) {
+            return new Step(in);
         }
 
         @Override
@@ -74,57 +63,15 @@ public class Step implements Parcelable {
         }
     };
 
-    /**
-     * get video URL
-     *
-     * @return video URL
-     */
-    public String getVideoURL() {
-        return videoURL;
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeString(shortDescription);
+        dest.writeString(description);
+        dest.writeString(videoURL);
+        dest.writeString(thumbnailURL);
     }
 
-    /**
-     * get description
-     *
-     * @return description
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * Gets id.
-     *
-     * @return the id
-     */
-    public int getId() {
-        return id;
-    }
-
-    /**
-     * Gets short description
-     * @return shortDescription
-     */
-    public String getShortDescription() {
-        return shortDescription;
-    }
-
-    /**
-     * Gets thumbnail URL
-     * @return thumbnailUrl
-     */
-    public String getThumbnailURL() {
-        return thumbnailURL;
-    }
-
-    @Override
-    public String toString() {
-        return "Step{" +
-                "videoURL='" + videoURL + '\'' +
-                ", description='" + description + '\'' +
-                ", id=" + id +
-                ", shortDescription='" + shortDescription + '\'' +
-                ", thumbnailURL='" + thumbnailURL + '\'' +
-                '}';
+    public int describeContents() {
+        return 0;
     }
 }

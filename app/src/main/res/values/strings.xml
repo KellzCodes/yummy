@@ -1,3 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Yummy</string>
+    <string name="share_recipe">Share Recipe</string>
+    <string name="ingredients_title">Ingredients</string>
+    <string name="steps_title">Steps</string>
+    <string name="step_number_format">Step %1$d</string>
+    <string name="network_error_recipes">Recipe Data Not Available</string>
+    <string name="appwidget_text">Recipe Shopping List</string>
+    <string name="recipe_image">recipe image</string>
+    <string name="ingredients_icon">ingredients icon</string>
+    <string name="steps_icon">steps icon</string>
+    <string name="servings_icon">servings icon</string>
+    <string name="step_item_video_thumb">step item video thumb</string>
 </resources>
