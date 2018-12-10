@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2018 Kelli Davis
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.kelldavis.yummy.ui;
 
 import android.content.Context;
@@ -22,9 +38,9 @@ import com.kelldavis.yummy.utilities.Constants;
 import java.util.ArrayList;
 
 public class StepsActivity extends AppCompatActivity {
-    private static final String BUNDLE_STEP_DATA = Constants.BUNDLE_STEP_DATA;
-    private static final String BUNDLE_CURRENT_RECIPE = Constants.BUNDLE_CURRENT_RECIPE;
-    private static final String BUNDLE_CURRENT_STEP = Constants.BUNDLE_CURRENT_STEP;
+    private static final String STEP_DATA = Constants.BUNDLE_STEP_DATA;
+    private static final String CURRENT_RECIPE = Constants.BUNDLE_CURRENT_RECIPE;
+    private static final String CURRENT_STEP = Constants.BUNDLE_CURRENT_STEP;
     private ViewPager mViewPager;
 
     private ActivityStepViewpagerBinding binding;
@@ -32,9 +48,9 @@ public class StepsActivity extends AppCompatActivity {
     public static Intent newIntent(Context packageContext, ArrayList<Step> stepList,
                                    int currentStep, String recipeName) {
         Intent intent = new Intent(packageContext, StepsActivity.class);
-        intent.putExtra(BUNDLE_STEP_DATA, stepList);
-        intent.putExtra(BUNDLE_CURRENT_STEP, currentStep);
-        intent.putExtra(BUNDLE_CURRENT_RECIPE, recipeName);
+        intent.putExtra(STEP_DATA, stepList);
+        intent.putExtra(CURRENT_STEP, currentStep);
+        intent.putExtra(CURRENT_RECIPE, recipeName);
         return intent;
     }
 
@@ -43,9 +59,9 @@ public class StepsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_step_viewpager);
 
-        final ArrayList<Step> stepList = getIntent().getExtras().getParcelableArrayList(BUNDLE_STEP_DATA);
-        final int currentStep = getIntent().getExtras().getInt(BUNDLE_CURRENT_STEP);
-        String currentRecipeName = getIntent().getExtras().getString(BUNDLE_CURRENT_RECIPE);
+        final ArrayList<Step> stepList = getIntent().getExtras().getParcelableArrayList(STEP_DATA);
+        final int currentStep = getIntent().getExtras().getInt(CURRENT_STEP);
+        String currentRecipeName = getIntent().getExtras().getString(CURRENT_RECIPE);
 
         setSupportActionBar(binding.tbToolbar.toolbar);
         binding.tbToolbar.toolbar.setTitle(currentRecipeName);
@@ -64,7 +80,7 @@ public class StepsActivity extends AppCompatActivity {
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 
-        //Fullscreen mode for non-tablet landscape orientation
+        // Fullscreen mode for non-tablet landscape orientation
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             binding.tbToolbar.toolbar.setVisibility(View.GONE);
             binding.tlActivityStepViewpager.setVisibility(View.GONE);

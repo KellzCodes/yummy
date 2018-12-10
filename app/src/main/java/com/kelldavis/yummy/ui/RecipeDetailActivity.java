@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2018 Kelli Davis
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.kelldavis.yummy.ui;
 
 import android.content.Context;
@@ -18,11 +34,11 @@ import com.kelldavis.yummy.utilities.Constants;
 import java.util.ArrayList;
 
 public class RecipeDetailActivity extends AppCompatActivity implements RecipeDetailPresenter.Callbacks {
-    private static final String BUNDLE_RECIPE_DATA = Constants.BUNDLE_RECIPE_DATA;
+    private static final String RECIPE_DATA = Constants.BUNDLE_RECIPE_DATA;
 
     public static Intent newIntent(Context packageContext, Recipe recipe) {
         Intent intent = new Intent(packageContext, RecipeDetailActivity.class);
-        intent.putExtra(BUNDLE_RECIPE_DATA, recipe);
+        intent.putExtra(RECIPE_DATA, recipe);
         return intent;
     }
 
@@ -31,13 +47,13 @@ public class RecipeDetailActivity extends AppCompatActivity implements RecipeDet
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_masterdetail);
 
-        FragmentManager fm = getSupportFragmentManager();
-        Fragment fragment = fm.findFragmentById(R.id.fragment_container);
-        Recipe recipe = getIntent().getExtras().getParcelable(BUNDLE_RECIPE_DATA);
+        FragmentManager supportFragmentManager = getSupportFragmentManager();
+        Fragment fragment = supportFragmentManager.findFragmentById(R.id.fragment_container);
+        Recipe recipe = getIntent().getExtras().getParcelable(RECIPE_DATA);
 
         if (fragment == null) {
             fragment = RecipeDetailFragment.newInstance(recipe);
-            fm.beginTransaction()
+            supportFragmentManager.beginTransaction()
                     .add(R.id.fragment_container, fragment)
                     .commit();
 
@@ -56,9 +72,9 @@ public class RecipeDetailActivity extends AppCompatActivity implements RecipeDet
             Intent intent = StepsActivity.newIntent(this, stepList, currentStep, recipeName);
             startActivity(intent);
         } else {
-            Fragment newDetail = StepFragment.newInstance(stepList.get(currentStep));
+            Fragment stepFragment = StepFragment.newInstance(stepList.get(currentStep));
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.detail_fragment_container, newDetail)
+                    .replace(R.id.detail_fragment_container, stepFragment)
                     .commit();
         }
     }
