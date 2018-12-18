@@ -39,6 +39,7 @@ import com.kelldavis.yummy.utilities.OnItemClickListener;
 
 import java.util.ArrayList;
 
+// TODO remake recipe list fragment
 public class RecipeListFragment extends Fragment
         implements RecipeListPresenterViewContract.View {
     private final String INSTANCE_KEY_RECIPE_LIST = Constants.INSTANCE_KEY_RECIPE_LIST;
