@@ -1,106 +1,81 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
- * Copyright (C) 2018 Kelli Davis
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *-->
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools">
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/scrollViewMain">
-        <android.support.constraint.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:focusableInTouchMode="true">
-            <include
-                android:id="@+id/tb_toolbar"
-                layout="@layout/toolbar"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-            <RelativeLayout
-                android:id="@+id/cv_recipe_detail_ingredient_heading_holder"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="10dp"
-                app:cardPreventCornerOverlap="false"
-                app:cardUseCompatPadding="true"
-                app:cardElevation="4dp"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tb_toolbar">
-                <android.support.constraint.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-                    <TextView
-                        android:id="@+id/tv_recipe_detail_ingredient_heading"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="@string/ingredients_title"
-                        android:textSize="@dimen/text_size_recipe_title"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"
-                        android:background="@color/colorPrimaryDark"
-                        android:layout_gravity="center"
-                        android:gravity="center_horizontal"
-                        tools:text="Ingredients"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintRight_toRightOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        android:padding="15dp"/>
-                    <LinearLayout
-                        android:background="@color/colorAccent"
-                        android:padding="15dp"
-                        android:id="@+id/ll_ingredient_checklist"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        app:layout_constraintRight_toRightOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tv_recipe_detail_ingredient_heading">
-                    </LinearLayout>
-                </android.support.constraint.ConstraintLayout>
-            </RelativeLayout>
-                <TextView
-                    android:background="@color/colorPrimaryDark"
-                    android:textColor="@color/white"
-                    app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/cv_recipe_detail_ingredient_heading_holder"
-                    android:padding="15dp"
-                    android:id="@+id/tv_recipe_detail_steps_heading"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:text="@string/steps_title"
-                    android:textSize="@dimen/text_size_recipe_title"
-                    android:textStyle="bold"
-                    android:layout_gravity="center"
-                    tools:text="Steps"/>
-            <android.support.v7.widget.RecyclerView
-                android:layout_marginTop="20dp"
-                android:padding="8dp"
-                android:id="@+id/recipe_detail_steps_recycler_view"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tv_recipe_detail_steps_heading"/>
-        </android.support.constraint.ConstraintLayout>
-    </ScrollView>
-</layout>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context="com.tachyonlabs.bakingapp.fragments.RecipeDetailFragment">
 
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/sv_recipe_detail">
+
+        <RelativeLayout android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+            <ImageView
+                    android:id="@+id/iv_recipe_detail_photo"
+                    android:layout_width="@dimen/recipe_detail_image_width"
+                    android:layout_height="@dimen/recipe_detail_image_height"
+                    android:scaleType="fitXY"
+                    android:adjustViewBounds="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginBottom="@dimen/recipe_detail_image_bottom_margin"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_recipe_detail_name"
+                    android:textSize="@dimen/recipe_detail_recipe_name_text_size"
+                    android:layout_marginLeft="@dimen/recipe_detail_text_horizontal_margin"
+                    android:layout_marginTop="@dimen/recipe_detail_recipe_name_top_margin"
+                    tools:text="Recipe Name"
+                    tools:fontFamily="sans-serif"
+                    android:fontFamily="@font/la_belle_aurore"
+                    android:layout_alignParentTop="true"
+                    android:layout_toRightOf="@id/iv_recipe_detail_photo"/>
+
+            <TextView
+                    android:id="@+id/tv_recipe_servings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/tv_recipe_detail_name"
+                    android:layout_toRightOf="@id/iv_recipe_detail_photo"
+                    android:layout_marginTop="@dimen/recipe_detail_recipe_servings_top_margin"
+                    android:layout_marginLeft="@dimen/recipe_detail_text_horizontal_margin"
+                    android:textSize="@dimen/recipe_detail_recipe_servings_text_size"
+                    tools:fontFamily="sans-serif"
+                    android:fontFamily="@font/la_belle_aurore"
+                    tools:text="8 servings"/>
+
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_ingredients_list"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@id/iv_recipe_detail_photo"
+                    android:textSize="@dimen/recipe_detail_recipe_ingredients_text_size"
+                    android:lineSpacingMultiplier="1.1"
+                    android:layout_marginTop="@dimen/recipe_detail_recipe_ingredients_top_margin"
+                    android:layout_marginLeft="@dimen/recipe_detail_text_horizontal_margin"
+                    android:layout_marginRight="@dimen/recipe_detail_text_horizontal_margin"
+                    android:layout_marginBottom="@dimen/recipe_detail_recipe_ingredients_bottom_margin"/>
+
+            <View
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/recipe_detail_drop_shadow_height"
+                    android:layout_below="@id/tv_ingredients_list"
+                    android:id="@+id/v_ingredients_drop_shadow"
+                    android:background="@drawable/drop_shadow"/>
+
+            <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rv_recipe_steps"
+                    android:layout_below="@id/v_ingredients_drop_shadow"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingTop="@dimen/recipe_detail_recyclerview_top_padding"
+                    android:background="@color/colorPrimaryPale"/>
+        </RelativeLayout>
+    </ScrollView>
+
+</FrameLayout>
