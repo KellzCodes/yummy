@@ -19,46 +19,10 @@ package com.kelldavis.yummy.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
 public class Ingredient implements Parcelable {
-    @SerializedName("quantity")
-    @Expose
-    private Float quantity;
-    @SerializedName("measure")
-    @Expose
-    private String measure;
-    @SerializedName("ingredient")
-    @Expose
-    private String ingredient;
+    public static final Parcelable.Creator<Ingredient> CREATOR
+            = new Parcelable.Creator<Ingredient>() {
 
-    public Float getQuantity() {
-        return quantity;
-    }
-
-    public String getMeasure() {
-        return measure;
-    }
-
-    public String getIngredient() {
-        return ingredient;
-    }
-
-    protected Ingredient(Parcel in) {
-        quantity = in.readFloat();
-        measure = in.readString();
-        ingredient = in.readString();
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeFloat(quantity);
-        dest.writeString(measure);
-        dest.writeString(ingredient);
-    }
-
-    public static final Creator<Ingredient> CREATOR = new Creator<Ingredient>() {
         @Override
         public Ingredient createFromParcel(Parcel in) {
             return new Ingredient(in);
@@ -70,7 +34,66 @@ public class Ingredient implements Parcelable {
         }
     };
 
+    private final static String NO_UNIT_IN_JSON = "UNIT";
+    private String name;
+    private int quantity;
+    private String measurementUnit;
+
+    private Ingredient(Parcel in) {
+        name = in.readString();
+        quantity = in.readInt();
+        measurementUnit = in.readString();
+    }
+
+    public Ingredient(String ingredient, int quantity, String measure) {
+        this.name = ingredient;
+        this.quantity = quantity;
+        this.measurementUnit = measure;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public String getMeasurementUnit() {
+        return measurementUnit;
+    }
+
+    public void setMeasurementUnit(String measurementUnit) {
+        this.measurementUnit = measurementUnit;
+    }
+
+    public String getQuantityUnitNameString() {
+        if (getMeasurementUnit().equals(NO_UNIT_IN_JSON)) {
+            return String.format("%s %s", getQuantity(), getName());
+        } else {
+            return String.format("%s %s %s", getQuantity(), getMeasurementUnit().toLowerCase(), getName());
+        }
+    }
+
+    @Override
     public int describeContents() {
         return 0;
     }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(name);
+        parcel.writeInt(quantity);
+        parcel.writeString(measurementUnit);
+    }
 }
+
+
