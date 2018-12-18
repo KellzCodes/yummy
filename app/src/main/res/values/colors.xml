@@ -9,5 +9,14 @@
     <color name="icons">#FFFFFF</color>
     <color name="divider">#BDBDBD</color>
     <color name="white">#FFFFFF</color>
+    <color name="colorPrimaryPale">#FCE4CE</color>
+    <color name="colorPrimaryDisabled">#CFB3BD</color>
+
+    <!-- widget colors -->
+    <color name="transparent">#000000</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="card_shadow_1">#D4D4D4</color>
+    <color name="card_shadow_2">#DDDDDD</color>
+    <color name="card_detailing">#EEEEEE</color>
 </resources>
 
