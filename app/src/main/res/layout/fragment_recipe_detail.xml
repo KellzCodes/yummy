@@ -31,7 +31,7 @@
                     android:layout_marginTop="@dimen/recipe_detail_recipe_name_top_margin"
                     tools:text="Recipe Name"
                     tools:fontFamily="sans-serif"
-                    android:fontFamily="@font/lora_reg"
+                    android:fontFamily="@font/gamjaflower"
                     android:layout_alignParentTop="true"
                     android:layout_toRightOf="@id/iv_recipe_detail_photo"/>
 

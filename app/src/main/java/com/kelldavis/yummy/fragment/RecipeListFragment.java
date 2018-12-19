@@ -1,124 +1,156 @@
-/*
- * Copyright (C) 2018 Kelli Davis
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.kelldavis.yummy.fragment;
 
-import android.databinding.DataBindingUtil;
+import android.content.Context;
+import android.graphics.PorterDuff;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.kelldavis.yummy.R;
 import com.kelldavis.yummy.adapter.RecipeAdapter;
-import com.kelldavis.yummy.databinding.FragmentRecipeListBinding;
 import com.kelldavis.yummy.model.Recipe;
-import com.kelldavis.yummy.network.NetworkService;
-import com.kelldavis.yummy.presenter.RecipeListPresenter;
-import com.kelldavis.yummy.presenter.RecipeListPresenterViewContract;
-import com.kelldavis.yummy.utilities.Constants;
-import com.kelldavis.yummy.utilities.OnItemClickListener;
+import com.kelldavis.yummy.utilities.NetworkUtils;
+import com.kelldavis.yummy.utilities.RecipeJsonUtils;
 
-import java.util.ArrayList;
+import java.net.URL;
 
-// TODO remake recipe list fragment
-public class RecipeListFragment extends Fragment
-        implements RecipeListPresenterViewContract.View {
-    private final String INSTANCE_KEY_RECIPE_LIST = Constants.INSTANCE_KEY_RECIPE_LIST;
+public class RecipeListFragment extends Fragment implements RecipeAdapter.RecipeCardAdapterOnClickHandler {
+    private final static String TAG = RecipeListFragment.class.getSimpleName();
+    // Define a new interface OnStepClickListener that triggers a callback in the host activity
+    RecipeListFragment.OnRecipeClickListener mRecipeCallback;
+    private RecyclerView mRecyclerView;
+    private RecipeAdapter mRecipeAdapter;
+    private TextView mTvErrorMessageDisplay;
+    private ProgressBar mPbLoadingIndicator;
+    private Recipe[] mRecipes;
 
-    private FragmentRecipeListBinding binding;
-    private RecyclerView mRecipeRecyclerView;
-    private RecipeAdapter mAdapter;
-    private ArrayList<Recipe> mRecipeList = new ArrayList<>();
-    private RecipeListPresenter mRecipeListPresenter;
+    public RecipeListFragment() {
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        // This makes sure that the host activity has implemented the callback interface
+        // If not, it throws an exception
+        try {
+            mRecipeCallback = (RecipeListFragment.OnRecipeClickListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + getString(R.string.must_implement_onrecipeclicklistener));
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey(INSTANCE_KEY_RECIPE_LIST)) {
-                mRecipeList = savedInstanceState.getParcelableArrayList(INSTANCE_KEY_RECIPE_LIST);
-            }
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        // Inflate the layout for this fragment
+        final View rootView = inflater.inflate(R.layout.fragment_recipe_list, container, false);
+
+        mRecyclerView = rootView.findViewById(R.id.rv_recipe_cards);
+
+        // set the number of columns according to the dp width of the device's screen and rotation
+        DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
+        int dpWidth = Math.round(displayMetrics.widthPixels / displayMetrics.density);
+        int columns = Math.max(1, (int) Math.floor(dpWidth / 300));
+        GridLayoutManager layoutManager = new GridLayoutManager(getActivity(), columns);
+
+        mRecyclerView.setLayoutManager(layoutManager);
+        mRecipeAdapter = new RecipeAdapter(this);
+        mRecyclerView.setAdapter(mRecipeAdapter);
+        mTvErrorMessageDisplay = rootView.findViewById(R.id.tv_error_message_display);
+        mPbLoadingIndicator = rootView.findViewById(R.id.pb_loading_indicator);
+        mPbLoadingIndicator.getIndeterminateDrawable()
+                .setColorFilter(ContextCompat.getColor(getContext(), R.color.colorPrimary), PorterDuff.Mode.SRC_IN);
+
+        if (savedInstanceState == null) {
+            loadRecipes();
+        } else {
+            mRecipes = (Recipe[]) (savedInstanceState.getParcelableArray(getString(R.string.recipes_key)));
+            mRecipeAdapter.setRecipeCardData(mRecipes);
         }
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_recipe_list, container, false);
-        final View view = binding.getRoot();
-        binding.tbToolbar.toolbar.setTitle(getContext().getResources().getString(R.string.app_name));
-
-        mRecipeRecyclerView = (RecyclerView) view.findViewById(R.id.recipe_recycler_view);
-        mRecipeRecyclerView.setHasFixedSize(true);
-        mRecipeRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(),
-                getResources().getInteger(R.integer.recipe_list_columns)));
-
-        mRecipeListPresenter = new RecipeListPresenter(this, new NetworkService());
-
-        mAdapter = new RecipeAdapter(mRecipeList, new OnItemClickListener<Recipe>() {
-            @Override
-            public void onClick(Recipe recipe, View view) {
-                mRecipeListPresenter.recipeClicked(recipe, view);
-            }
-        });
-        mRecipeRecyclerView.setAdapter(mAdapter);
-
-        if(mRecipeList == null || mRecipeList.size() == 0) {
-            mRecipeListPresenter.fetchRecipes();
-        }
-        return view;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mRecipeListPresenter.viewDestroy();
-    }
-
-    @Override
-    public void updateAdapter(ArrayList<Recipe> recipeList) {
-        mRecipeList.clear();
-        mRecipeList.addAll(recipeList);
-        mAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void displaySnackbarMessage(int stringResId) {
-        Snackbar snackbar = Snackbar.make(getActivity().findViewById(R.id.cl_list_container),
-                getString(stringResId),
-                Snackbar.LENGTH_LONG);
-        View snackbarView = snackbar.getView();
-        snackbarView.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorAccent));
-        snackbar.show();
-    }
-
-    @Override
-    public boolean isActive() {
-        return isAdded();
+        return rootView;
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelableArrayList(INSTANCE_KEY_RECIPE_LIST, mRecipeList);
+        outState.putParcelableArray(getString(R.string.recipes_key), mRecipes);
         super.onSaveInstanceState(outState);
     }
-}
 
+    private void loadRecipes() {
+        new FetchRecipesTask().execute();
+    }
+
+    private void showRecipeCards() {
+        mTvErrorMessageDisplay.setVisibility(View.INVISIBLE);
+        mRecyclerView.setVisibility(View.VISIBLE);
+    }
+
+    private void showErrorMessage(String errorMessage) {
+        mRecyclerView.setVisibility(View.INVISIBLE);
+        mTvErrorMessageDisplay.setText(errorMessage);
+        mTvErrorMessageDisplay.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onClick(Recipe recipe) {
+        mRecipeCallback.onRecipeSelected(recipe);
+    }
+
+    // OnStepClickListener interface, calls a method in the host activity named onStepSelected
+    public interface OnRecipeClickListener {
+        void onRecipeSelected(Recipe recipe);
+    }
+
+    public class FetchRecipesTask extends AsyncTask<String, Void, Recipe[]> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mPbLoadingIndicator.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected Recipe[] doInBackground(String... params) {
+            try {
+                URL recipesJsonUrl = NetworkUtils.getRecipesJsonUrl();
+                String jsonRecipesResponse = NetworkUtils.getResponseFromHttpUrl(recipesJsonUrl);
+                return RecipeJsonUtils.getRecipesFromJson(getActivity(), jsonRecipesResponse);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Recipe[] theRecipes) {
+            mPbLoadingIndicator.setVisibility(View.INVISIBLE);
+
+            if (theRecipes != null) {
+                mRecipes = theRecipes;
+                showRecipeCards();
+                mRecipeAdapter.setRecipeCardData(mRecipes);
+            } else {
+                showErrorMessage(getString(R.string.no_data_received));
+            }
+        }
+    }
+
+}

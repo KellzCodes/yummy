@@ -1,82 +1,47 @@
-/*
- * Copyright (C) 2018 Kelli Davis
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.kelldavis.yummy.ui;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.TypedValue;
+import android.widget.TextView;
 
 import com.kelldavis.yummy.R;
 import com.kelldavis.yummy.fragment.RecipeDetailFragment;
-import com.kelldavis.yummy.fragment.StepFragment;
+import com.kelldavis.yummy.fragment.RecipeStepFragment;
 import com.kelldavis.yummy.model.Recipe;
-import com.kelldavis.yummy.model.Step;
-import com.kelldavis.yummy.presenter.RecipeDetailPresenter;
-import com.kelldavis.yummy.utilities.Constants;
 
-import java.util.ArrayList;
-
-public class RecipeDetailActivity extends AppCompatActivity implements RecipeDetailPresenter.Callbacks {
-    private static final String RECIPE_DATA = Constants.BUNDLE_RECIPE_DATA;
-
-    public static Intent newIntent(Context packageContext, Recipe recipe) {
-        Intent intent = new Intent(packageContext, RecipeDetailActivity.class);
-        intent.putExtra(RECIPE_DATA, recipe);
-        return intent;
-    }
+public class RecipeDetailActivity extends AppCompatActivity implements RecipeDetailFragment.OnStepClickListener {
+    private static final String TAG = RecipeDetailActivity.class.getSimpleName();
+    private Recipe mRecipe;
+    private boolean mTwoPane;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_masterdetail);
+        setContentView(R.layout.activity_recipe_detail);
+        Intent callingIntent = getIntent();
+        mRecipe = callingIntent.getParcelableExtra(getString(R.string.recipe_key));
 
-        FragmentManager supportFragmentManager = getSupportFragmentManager();
-        Fragment fragment = supportFragmentManager.findFragmentById(R.id.fragment_container);
-        Recipe recipe = getIntent().getExtras().getParcelable(RECIPE_DATA);
-
-        if (fragment == null) {
-            fragment = RecipeDetailFragment.newInstance(recipe);
-            supportFragmentManager.beginTransaction()
-                    .add(R.id.fragment_container, fragment)
-                    .commit();
-
-            if (getResources().getBoolean(R.bool.isTablet)) {
-                Fragment newDetail = StepFragment.newInstance(recipe.getSteps().get(0));
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.detail_fragment_container, newDetail)
-                        .commit();
-            }
+        if (findViewById(R.id.recipe_detail_fragment_for_tablet) != null) {
+            mTwoPane = true;
+            TextView recipeDetailName = findViewById(R.id.tv_recipe_detail_name);
+            recipeDetailName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+        } else {
+            mTwoPane = false;
         }
     }
 
-    @Override
-    public void stepSelected(ArrayList<Step> stepList, int currentStep, String recipeName) {
-        if (!getResources().getBoolean(R.bool.isTablet)) {
-            Intent intent = StepsActivity.newIntent(this, stepList, currentStep, recipeName);
-            startActivity(intent);
+    public void onStepSelected(int whichStep) {
+        if (mTwoPane) {
+            RecipeStepFragment recipeStepFragment = (RecipeStepFragment) getSupportFragmentManager().findFragmentById(R.id.recipe_step_fragment_for_tablet);
+            recipeStepFragment.updateStepNumberDescriptionAndVideo(whichStep);
         } else {
-            Fragment stepFragment = StepFragment.newInstance(stepList.get(currentStep));
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.detail_fragment_container, stepFragment)
-                    .commit();
+            Intent intent = new Intent(this, RecipeStepActivity.class);
+            intent.putExtra(getString(R.string.recipe_key), mRecipe);
+            intent.putExtra(getString(R.string.which_step_key), whichStep);
+            startActivity(intent);
         }
     }
 }
-

@@ -1,193 +1,137 @@
-/*
- * Copyright (C) 2018 Kelli Davis
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.kelldavis.yummy.fragment;
 
+import android.appwidget.AppWidgetManager;
+import android.content.Context;
 import android.content.Intent;
-import android.databinding.DataBindingUtil;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.ShareActionProvider;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.kelldavis.yummy.R;
 import com.kelldavis.yummy.adapter.StepAdapter;
-import com.kelldavis.yummy.databinding.FragmentRecipeDetailBinding;
-import com.kelldavis.yummy.model.Ingredient;
 import com.kelldavis.yummy.model.Recipe;
-import com.kelldavis.yummy.model.Step;
-import com.kelldavis.yummy.presenter.RecipeDetailPresenter;
-import com.kelldavis.yummy.presenter.RecipeDetailPresenterViewContract;
-import com.kelldavis.yummy.utilities.Constants;
-import com.kelldavis.yummy.utilities.OnItemClickListener;
+import com.kelldavis.yummy.model.Ingredient;
+import com.kelldavis.yummy.ui.RecipeDetailActivity;
+import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-
-public class RecipeDetailFragment extends Fragment implements RecipeDetailPresenterViewContract.View {
-    private static final String BUNDLE_RECIPE_DATA = Constants.BUNDLE_RECIPE_DATA;
-    private static final String INSTANCE_KEY_ADAPTER_POSITION = Constants.INSTANCE_KEY_ADAPTER_POSITION;
-    private final String INSTANCE_KEY_RECIPE = Constants.INSTANCE_KEY_RECIPE;
-    private final String INSTANCE_KEY_INGREDIENTS_ID = Constants.INSTANCE_KEY_INGREDIENTS_ID;
-    private final String INSTANCE_KEY_INGREDIENTS_COUNT = Constants.INSTANCE_KEY_INGREDIENTS_COUNT;
-    private final String INSTANCE_KEY_STEPS = Constants.INSTANCE_KEY_STEPS;
-
-    private ShareActionProvider mShareActionProvider;
-    private FragmentRecipeDetailBinding binding;
-    private Recipe mRecipe;
-    private RecipeDetailPresenter mRecipeDetailPresenter;
-    private RecyclerView mRecyclerView;
+public class RecipeDetailFragment extends Fragment implements StepAdapter.RecipeStepAdapterOnClickHandler {
+    private static final String TAG = RecipeDetailActivity.class.getSimpleName();
+    OnStepClickListener mStepCallback;
+    private RecyclerView mRecipeStepsRecyclerView;
     private StepAdapter mStepAdapter;
-    private int mStepAdapterSavedPosition = 0;
-    private ArrayList<Step> mStepList = new ArrayList<>();
-    private ArrayList<TextView> mIngredientList = new ArrayList<>();
+    private Recipe mRecipe;
 
-    public static RecipeDetailFragment newInstance(Recipe recipe) {
-        Bundle bundle = new Bundle();
-        bundle.putParcelable(BUNDLE_RECIPE_DATA, recipe);
-        RecipeDetailFragment fragment = new RecipeDetailFragment();
-        fragment.setArguments(bundle);
-        return fragment;
+    public RecipeDetailFragment() {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onAttach(Context context) {
+        super.onAttach(context);
 
-        Bundle arguments = getArguments();
-        if ((arguments != null) && (arguments.containsKey(BUNDLE_RECIPE_DATA))) {
-            mRecipe = arguments.getParcelable(BUNDLE_RECIPE_DATA);
+
+        try {
+            mStepCallback = (OnStepClickListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + getString(R.string.must_implement_onstepclicklistener));
         }
-        if(savedInstanceState != null && savedInstanceState.containsKey(INSTANCE_KEY_ADAPTER_POSITION)) {
-            mStepAdapterSavedPosition = savedInstanceState.getInt(INSTANCE_KEY_ADAPTER_POSITION);
-        }
-        if(savedInstanceState != null) {
-            if(savedInstanceState.containsKey(INSTANCE_KEY_RECIPE)) {
-                mRecipe = savedInstanceState.getParcelable(INSTANCE_KEY_RECIPE);
-            }
-            if(savedInstanceState.containsKey(INSTANCE_KEY_STEPS)) {
-                mStepList = savedInstanceState.getParcelableArrayList(INSTANCE_KEY_STEPS);
-            }
-            if(savedInstanceState.containsKey(INSTANCE_KEY_INGREDIENTS_COUNT)) {
-                int ingredientCount = savedInstanceState.getInt(INSTANCE_KEY_INGREDIENTS_COUNT);
-                for(int i=0; i<ingredientCount; i++) {
-                    TextView textView = new TextView(this.getContext());
-                    textView.setTextColor(getResources().getColor(R.color.white));
-                    textView.setPadding(10,12,10,12);
-                    textView.setText("- " + String.valueOf(mRecipe.getIngredients().get(i).getQuantity()) +
-                            String.valueOf(mRecipe.getIngredients().get(i).getMeasure()) + " " + mRecipe.getIngredients().get(i).getIngredient());
-                    mIngredientList.add(textView);
-                }
-            }
-        }
-        mRecipeDetailPresenter = new RecipeDetailPresenter(this);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
 
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_recipe_detail, container, false);
-        final View view = binding.getRoot();
+        // Inflate the layout for this fragment
+        View rootView = inflater.inflate(R.layout.fragment_recipe_detail, container, false);
+        ImageView ivRecipeDetailPhoto = rootView.findViewById(R.id.iv_recipe_detail_photo);
+        TextView tvRecipeName = rootView.findViewById(R.id.tv_recipe_detail_name);
+        TextView tvRecipeServings = rootView.findViewById(R.id.tv_recipe_servings);
+        TextView tvIngredientsList = rootView.findViewById(R.id.tv_ingredients_list);
+        ScrollView svRecipeDetail = rootView.findViewById(R.id.sv_recipe_detail);
 
-        binding.tbToolbar.toolbar.setTitle(mRecipe.getName());
-        ((AppCompatActivity) getActivity()).setSupportActionBar(binding.tbToolbar.toolbar);
+        // set up recyclerview and adapter to display the steps
+        mRecipeStepsRecyclerView = rootView.findViewById(R.id.rv_recipe_steps);
+        LinearLayoutManager stepsLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
+        mRecipeStepsRecyclerView.setLayoutManager(stepsLayoutManager);
+        mStepAdapter = new StepAdapter(this);
+        mRecipeStepsRecyclerView.setAdapter(mStepAdapter);
 
-        //Save dynamically created textview state on rotation
-        if(mIngredientList.size()>0) {
-            for(TextView tvIngredientView : mIngredientList) {
-                binding.llIngredientChecklist.addView(tvIngredientView);
-            }
+        if (savedInstanceState == null) {
+            Intent callingIntent = getActivity().getIntent();
+            mRecipe = callingIntent.getParcelableExtra(getString(R.string.recipe_key));
+
+            // save selected recipe details to SharedPreferences for the widget to use
+            SharedPreferences sharedPreferencesForWidget = getContext().getSharedPreferences(getString(R.string.pref_file_name), Context.MODE_PRIVATE | Context.MODE_MULTI_PROCESS);
+            SharedPreferences.Editor editor = sharedPreferencesForWidget.edit();
+            editor.putString(getString(R.string.recipe_name_key), mRecipe.getName());
+            editor.putString(getString(R.string.recipe_ingredients_key), getAndFormatIngredients());
+            editor.putString(getString(R.string.recipe_thumbnail_url_key), mRecipe.getThumbnailUrl());
+            editor.commit();
+
+            // and let the widget know there is a new most-recently-selected recipe to display
+            Intent intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            getContext().sendBroadcast(intent);
         } else {
-            if (mRecipe.getIngredients() != null && mRecipe.getIngredients().size() > 0) {
-                for (Ingredient ingredient : mRecipe.getIngredients()) {
-                    TextView textView = new TextView(this.getContext());
-                    textView.setTextColor(getResources().getColor(R.color.white));
-                    textView.setPadding(10,12,10,12);
-                    textView.setText("- "+String.valueOf(ingredient.getQuantity()) +
-                            String.valueOf(ingredient.getMeasure()) + " " + ingredient.getIngredient());
-                    binding.llIngredientChecklist.addView(textView);
-                    mIngredientList.add(textView);
-                }
-            }
-        }
-        if (mRecipe.getSteps() != null && mRecipe.getSteps().size() > 0 && mStepList.size()==0) {
-            mStepList.addAll(mRecipe.getSteps());
+            mRecipe = savedInstanceState.getParcelable(getString(R.string.recipe_key));
         }
 
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recipe_detail_steps_recycler_view);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(),
-                LinearLayoutManager.VERTICAL, false));
-        mStepAdapter = new StepAdapter(mStepList, new OnItemClickListener<Step>() {
-            @Override
-            public void onClick(Step step, View view) {
-                mRecipeDetailPresenter.stepClicked(mStepList, step.getId(), mRecipe.getName(), view);
-            }
-        });
-        mStepAdapter.setStepAdapterCurrentPosition(mStepAdapterSavedPosition);
-        mRecyclerView.setAdapter(mStepAdapter);
+        Picasso.with(getContext())
+                .load(mRecipe.getImageUrl())
+                .placeholder(R.drawable.ic_launcher_foreground)
+                .error(R.drawable.ic_launcher_foreground)
+                .into(ivRecipeDetailPhoto);
 
-        return view;
+        tvRecipeName.setText(mRecipe.getName());
+
+        String servingsDesc = String.format("%d serving%s", mRecipe.getServings(), mRecipe.getServings() != 1 ? "s" : "");
+        tvRecipeServings.setText(servingsDesc);
+        tvIngredientsList.setText(getAndFormatIngredients());
+        ActionBar ab = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        ab.setTitle(mRecipe.getName());
+
+        mStepAdapter.setRecipeStepData(mRecipe.getSteps());
+
+        // start with the scrollview scrolled all the way up if we're not restoring a savedInstanceState
+        if (savedInstanceState == null) {
+            svRecipeDetail.smoothScrollTo(0, 0);
+        }
+
+        return rootView;
     }
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater menuInflater) {
-        super.onCreateOptionsMenu(menu, menuInflater);
-        menuInflater.inflate(R.menu.recipe_detail_menu, menu);
-        MenuItem item = menu.findItem(R.id.menu_item_detail_share);
-        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
-        setShareIntent(createShareIntent());
-    }
-    private void setShareIntent(Intent shareIntent) {
-        if (mShareActionProvider != null) {
-            mShareActionProvider.setShareIntent(shareIntent);
+    private String getAndFormatIngredients() {
+        Ingredient[] recipeIngredients = mRecipe.getIngredients();
+        String[] ingredients = new String[recipeIngredients.length];
+        for (int i = 0; i < ingredients.length; i++) {
+            ingredients[i] = recipeIngredients[i].getQuantityUnitNameString();
         }
-    }
-    private Intent createShareIntent() {
-        String msg = mRecipe.getName() + "\n" + "----\n" +
-                getString(R.string.ingredients_title) + ":\n" + "----\n";
-        for(TextView ingredient : mIngredientList){
-            msg += ingredient.getText() + "\n";
-        }
-        msg += getString(R.string.steps_title) + ":\n" + "----\n";
-        for(Step step : mStepList){
-            msg += step.getShortDescription() + "\n";
-        }
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, msg);
-        return shareIntent;
+        return TextUtils.join("\n", ingredients);
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable(getString(R.string.recipe_key), mRecipe);
         super.onSaveInstanceState(outState);
-        outState.putInt(INSTANCE_KEY_ADAPTER_POSITION, mStepAdapter.getStepAdapterCurrentPosition());
-        outState.putParcelable(INSTANCE_KEY_RECIPE, mRecipe);
-        outState.putParcelableArrayList(INSTANCE_KEY_STEPS, mStepList);
-        outState.putInt(INSTANCE_KEY_INGREDIENTS_COUNT, mIngredientList.size());
+    }
+
+    @Override
+    public void onClick(int whichStep) {
+        mStepCallback.onStepSelected(whichStep);
+    }
+
+    // OnStepClickListener interface, calls a method in the host activity named onStepSelected
+    public interface OnStepClickListener {
+        void onStepSelected(int position);
     }
 }

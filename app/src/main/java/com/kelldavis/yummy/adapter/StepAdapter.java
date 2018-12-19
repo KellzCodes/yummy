@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2018 Kelli Davis
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.kelldavis.yummy.adapter;
 
 import android.content.Context;
@@ -26,60 +10,60 @@ import android.widget.TextView;
 import com.kelldavis.yummy.R;
 import com.kelldavis.yummy.model.Step;
 
-public class StepAdapter extends RecyclerView.Adapter<StepAdapter.StepAdapterViewHolder> {
+public class StepAdapter extends RecyclerView.Adapter<StepAdapter.RecipeStepAdapterViewHolder> {
     private static final String TAG = StepAdapter.class.getSimpleName();
-    final private StepAdapter.StepAdapterOnClickHandler mClickHandler;
-    private Step[] mRecipeSteps;
+    final private StepAdapter.RecipeStepAdapterOnClickHandler mClickHandler;
+    private Step[] mSteps;
 
-    public StepAdapter(StepAdapter.StepAdapterOnClickHandler stepAdapterOnClickHandler) {
-        mClickHandler = stepAdapterOnClickHandler;
+    public StepAdapter(StepAdapter.RecipeStepAdapterOnClickHandler recipeStepAdapterOnClickHandler) {
+        mClickHandler = recipeStepAdapterOnClickHandler;
     }
 
     @Override
-    public StepAdapter.StepAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public StepAdapter.RecipeStepAdapterViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         Context context = viewGroup.getContext();
         int layoutIdForListItem = R.layout.item_step_card;
         LayoutInflater inflater = LayoutInflater.from(context);
         boolean shouldAttachToParentImmediately = false;
 
         View view = inflater.inflate(layoutIdForListItem, viewGroup, shouldAttachToParentImmediately);
-        StepAdapter.StepAdapterViewHolder viewHolder = new StepAdapter.StepAdapterViewHolder(view);
+        StepAdapter.RecipeStepAdapterViewHolder viewHolder = new StepAdapter.RecipeStepAdapterViewHolder(view);
 
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(StepAdapter.StepAdapterViewHolder holder, int position) {
-        int recipeStepNumber = mRecipeSteps[position].getId();
+    public void onBindViewHolder(StepAdapter.RecipeStepAdapterViewHolder holder, int position) {
+        int recipeStepNumber = mSteps[position].getId();
         // the recipe introduction gets grouped with the steps but doesn't have a step number in its description
         String stepNumberString = recipeStepNumber > 0 ? String.format("Step %d: ", recipeStepNumber) : "";
-        String recipeShortDescription = mRecipeSteps[position].getShortDescription();
+        String recipeShortDescription = mSteps[position].getShortDescription();
 
         holder.tvStepNumberAndShortDescription.setText(String.format(stepNumberString + recipeShortDescription));
     }
 
     @Override
     public int getItemCount() {
-        if (mRecipeSteps == null) {
+        if (mSteps == null) {
             return 0;
         } else {
-            return mRecipeSteps.length;
+            return mSteps.length;
         }
     }
 
-    public void setRecipeStepData(Step[] recipeSteps) {
-        mRecipeSteps = recipeSteps;
+    public void setRecipeStepData(Step[] steps) {
+        mSteps = steps;
         notifyDataSetChanged();
     }
 
-    public interface StepAdapterOnClickHandler {
+    public interface RecipeStepAdapterOnClickHandler {
         void onClick(int whichStep);
     }
 
-    public class StepAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class RecipeStepAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         final TextView tvStepNumberAndShortDescription;
 
-        public StepAdapterViewHolder(View itemView) {
+        public RecipeStepAdapterViewHolder(View itemView) {
             super(itemView);
             tvStepNumberAndShortDescription = itemView.findViewById(R.id.tv_step_number_and_short_description);
             itemView.setOnClickListener(this);

@@ -18,7 +18,7 @@
     <dimen name="recipe_card_height">128dp</dimen>
     <dimen name="recipe_card_horizontal_margin">12dp</dimen>
     <dimen name="recipe_card_bottom_margin">24dp</dimen>
-    <dimen name="recipe_card_recipe_name_text_size">30sp</dimen>
+    <dimen name="recipe_card_recipe_name_text_size">25sp</dimen>
     <dimen name="recipe_card_recipe_name_left_margin">16dp</dimen>
     <dimen name="recipe_card_recipe_name_top_margin">4dp</dimen>
     <dimen name="recipe_card_blurb_horizontal_margin">14dp</dimen>

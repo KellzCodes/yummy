@@ -48,6 +48,7 @@
             android:layout_marginRight="@dimen/recipe_card_blurb_horizontal_margin"
             android:textSize="@dimen/recipe_card_blurb_text_size"
             android:lineSpacingMultiplier="1.1"
-            tools:text="Your family and friends will love this yummy baked treat!"/>
+            tools:text="Your family will love this delicious baked treat!"/>
+
     </RelativeLayout>
 </android.support.v7.widget.CardView>

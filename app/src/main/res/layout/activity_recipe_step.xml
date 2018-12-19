@@ -6,7 +6,7 @@
 
     <fragment
             android:id="@+id/recipe_step_fragment"
-            android:name="com.kelldavis.yummy.fragment.StepFragment"
+            android:name="com.kelldavis.yummy.fragment.RecipeStepFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
